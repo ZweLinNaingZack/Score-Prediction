@@ -570,3 +570,10 @@ def test_cors_origins_are_parsed_forgivingly():
     assert parse_origins("") == ["*"]
     assert parse_origins("https://a.vercel.app/") == ["https://a.vercel.app"]
     assert parse_origins('"https://a.vercel.app", https://b.com/ ') == ["https://a.vercel.app", "https://b.com"]
+
+
+def test_cors_origin_without_scheme_gets_https():
+    from app.main import parse_origins
+
+    assert parse_origins("score-prediction-tau.vercel.app") == ["https://score-prediction-tau.vercel.app"]
+    assert parse_origins("http://localhost:3000, app.example.com") == ["http://localhost:3000", "https://app.example.com"]

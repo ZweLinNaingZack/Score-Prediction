@@ -18,7 +18,8 @@ app = FastAPI(title="Score Prediction API", lifespan=lifespan)
 def parse_origins(raw: str) -> list[str]:
     """`https://site.vercel.app/` and `"https://site.vercel.app"` both mean https://site.vercel.app."""
     found = [o.strip().strip("'\"").rstrip("/") for o in raw.replace("\n", ",").split(",")]
-    return [o for o in found if o] or ["*"]
+    found = [o if o == "*" or "://" in o else f"https://{o}" for o in found if o]  # bare host: assume https
+    return found or ["*"]
 
 
 origins = parse_origins(settings.cors_origins)
