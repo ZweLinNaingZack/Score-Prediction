@@ -194,7 +194,11 @@ pure black background, gold accent (`--accent`), red only for live (`--live`), h
 - Accessibility rules applied: skip link, visible gold focus ring, 44px touch targets,
   `aria-current` on nav, `aria-pressed` on filters, reduced-motion support, tabular numerals.
 
-## Deployment (API live 2026-10-24; website on Vercel not yet)
+## Deployment (LIVE 2026-10-24: https://score-prediction-tau.vercel.app, API https://score-prediction-api.onrender.com/api)
+
+- Vercel needs root directory `frontend` and env `NEXT_PUBLIC_API_URL` (built in: redeploy after changing it).
+  Render `CORS_ORIGINS` must be the Vercel origin; `parse_origins` (app/main.py) forgives quotes, a trailing
+  slash and a missing https://. A wrong value shows as a CORS error in the browser console and "Can't load".
 
 - See DEPLOY.md. Vercel = `frontend/` (root dir setting, env `NEXT_PUBLIC_API_URL`), Render = `render.yaml`
   (backend/, Python 3.13, `--proxy-headers` so the login limiter sees real client addresses), Neon = Postgres.
