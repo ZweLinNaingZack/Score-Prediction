@@ -6,7 +6,18 @@ from app.config import settings
 
 def normalize_database_url(url: str) -> str:
     """Hosts such as Neon hand out `postgres://` or `postgresql://` URLs; SQLAlchemy needs the driver
-    name (we use psycopg 3). SQLite URLs pass through unchanged."""
+    name (we use psycopg 3). SQLite URLs pass through unchanged. Also forgives common copy-paste slips:
+    surrounding spaces or quotes, a leading `psql ` (Neon's copy box can add it) or `DATABASE_URL=`."""
+    url = url.strip()
+    if url.startswith("DATABASE_URL="):
+        url = url[len("DATABASE_URL="):].strip()
+    if url.startswith("psql "):
+        url = url[len("psql "):].strip()
+    url = url.strip("'\"` ")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL is empty. Set it to your Neon connection string (it starts with postgresql://)."
+        )
     for prefix in ("postgres://", "postgresql://"):
         if url.startswith(prefix):
             return "postgresql+psycopg://" + url[len(prefix):]

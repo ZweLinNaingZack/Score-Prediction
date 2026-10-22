@@ -542,3 +542,22 @@ def test_cors_origins_come_from_settings():
     with TestClient(app) as client:
         r = client.get("/api/health", headers={"Origin": "https://example.vercel.app"})
         assert r.headers.get("access-control-allow-origin") in ("*", "https://example.vercel.app")
+
+
+def test_database_url_paste_mistakes_are_forgiven():
+    import pytest
+
+    from app.db.database import normalize_database_url as norm
+
+    good = "postgresql+psycopg://u:p@host/db?sslmode=require"
+    for pasted in (
+        "postgresql://u:p@host/db?sslmode=require",
+        "  postgresql://u:p@host/db?sslmode=require\n",
+        "'postgresql://u:p@host/db?sslmode=require'",
+        '"postgresql://u:p@host/db?sslmode=require"',
+        "psql 'postgresql://u:p@host/db?sslmode=require'",
+        "DATABASE_URL=postgresql://u:p@host/db?sslmode=require",
+    ):
+        assert norm(pasted) == good, pasted
+    with pytest.raises(RuntimeError, match="empty"):
+        norm("   ")
