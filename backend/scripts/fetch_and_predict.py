@@ -9,6 +9,7 @@ quotas, so they get the soonest matches first, spaced out, and stop for the run 
 """
 import asyncio
 import time
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
@@ -58,11 +59,20 @@ async def main() -> None:
             .order_by(Fixture.kickoff)
         ).all()
 
+        # who already predicted what: one query, not one per match (the database may be far away)
+        done_by: dict[int, set[str]] = defaultdict(set)
+        for fixture_id, source in db.execute(
+            select(PredictionRecord.fixture_id, PredictionRecord.source).where(
+                PredictionRecord.fixture_id.in_([f.id for f in upcoming])
+            )
+        ):
+            done_by[fixture_id].add(source)
+
         saved = 0
         calls = 0  # AI requests this run
         stopped: set[str] = set()  # providers that hit their quota
         for f in upcoming:
-            done = set(db.scalars(select(PredictionRecord.source).where(PredictionRecord.fixture_id == f.id)))
+            done = done_by[f.id]
             if my_model is not None and "my_model" not in done:
                 p = my_model.predict(f.home_team, f.away_team)  # None when a team is unknown
                 if p is not None:

@@ -76,18 +76,28 @@ def to_values(item: dict) -> dict | None:
     }
 
 
+def _load_existing(db: Session, ids: list[int]) -> dict[int, Fixture]:
+    """All stored fixtures with these ids in a few queries. One query per match is far too slow when the
+    database is on another continent (each round trip costs 0.2s)."""
+    found: dict[int, Fixture] = {}
+    for i in range(0, len(ids), 500):
+        found.update({f.id: f for f in db.scalars(select(Fixture).where(Fixture.id.in_(ids[i : i + 500])))})
+    return found
+
+
 def upsert(db: Session, items: list[dict]) -> int:
     count = 0
+    existing = _load_existing(db, [item["id"] for item in items])
     for item in items:
         values = to_values(item)
         if values is None:
             # a stored match that became postponed/cancelled must not linger as "upcoming"
-            if item["status"] not in LIVE | FINISHED | UPCOMING and db.get(Fixture, item["id"]):
+            if item["status"] not in LIVE | FINISHED | UPCOMING and item["id"] in existing:
                 db.execute(delete(PredictionRecord).where(PredictionRecord.fixture_id == item["id"]))
                 db.execute(delete(Unlock).where(Unlock.fixture_id == item["id"]))
                 db.execute(delete(Fixture).where(Fixture.id == item["id"]))
             continue
-        row = db.get(Fixture, values["id"])
+        row = existing.get(values["id"])
         if row is None:
             db.add(Fixture(**values))
         else:

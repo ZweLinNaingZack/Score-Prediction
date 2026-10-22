@@ -199,8 +199,9 @@ pure black background, gold accent (`--accent`), red only for live (`--live`), h
 - See DEPLOY.md. Vercel = `frontend/` (root dir setting, env `NEXT_PUBLIC_API_URL`), Render = `render.yaml`
   (backend/, Python 3.13, `--proxy-headers` so the login limiter sees real client addresses), Neon = Postgres.
 - `DATABASE_URL` may be `postgresql://...`: `normalize_database_url` (app/db/database.py) adds the psycopg
-  driver. All tables compile for Postgres (checked), but it has NOT been run against a real Postgres yet:
-  check `/api/matches` after the first deploy. `CORS_ORIGINS` limits browser access (default `*`).
+  driver. Checked against the real Neon database (2026-10-23): connects, creates all 6 tables, a second
+  init_db is harmless, and the reserved-word column `group` round-trips. Not yet run: the daily jobs and
+  the API serving real matches from Postgres (do the first-time setup workflow, then check `/api/matches`). `CORS_ORIGINS` limits browser access (default `*`).
 - Daily jobs run in GitHub Actions (`.github/workflows/jobs.yml`), not on Render: update_results, train,
   fetch_and_predict, update_odds, writing to Neon. The model is retrained inside each run, so
   `data/model.json` on the API server is never used. `bootstrap.yml` is the one-time backfill. `ci.yml` runs tests.
