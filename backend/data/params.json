@@ -1,0 +1,11 @@
+{
+  "half_life_days": 550.0,
+  "prior": 8.0,
+  "use_dc": true,
+  "draw_boost": 0.0,
+  "home_prior": 5.0,
+  "log_loss": 0.9848,
+  "accuracy": 0.5256,
+  "exact": 0.1007,
+  "tested_on": 1798
+}

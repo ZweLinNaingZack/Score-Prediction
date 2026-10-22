@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Dark Mode (OLED) with a gold accent. Red is reserved for live. */
+:root {
+  color-scheme: dark;
+  --background: #000000;
+  --foreground: #f5f5f4;
+  --muted: #a1a1aa; /* 8:1 on black */
+  --line: rgba(255, 255, 255, 0.1);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --accent: #f5c542;
+  --on-accent: #1a1400;
+  --live: #ff5c6c;
+  --down: #e0605a; /* relegation / eliminated, softer than the live red */
+  --warn: #f0a04b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-live: var(--live);
+  --color-down: var(--down);
+  --color-warn: var(--warn);
+  --font-sans: "Segoe UI", var(--font-fallback), system-ui, sans-serif;
+  --font-display: "Segoe UI", var(--font-fallback), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Segoe UI", var(--font-fallback), system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+button,
+a {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* gold glow behind the hero */
+.hero-glow {
+  background: radial-gradient(
+    55% 70% at 50% 0%,
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 70%
+  );
+}
+
+/* entrance: transform and opacity only, staggered with --i */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal {
+  animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

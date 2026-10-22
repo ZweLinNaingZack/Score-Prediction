@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+pydantic-settings
+sqlalchemy
+pandas
+scikit-learn
+xgboost
+openai
+google-genai
+anthropic
+pytest

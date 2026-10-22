@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.db
+.venv/
+node_modules/
+.next/
+
+# local secrets and data
+backend/data/.auth_secret
+*.env.local
+.env*.local
+# keep the example files
+!.env.example
+!.env.local.example
