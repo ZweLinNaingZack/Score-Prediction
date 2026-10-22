@@ -15,6 +15,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Score Prediction API", lifespan=lifespan)
-origins = [o.strip().rstrip("/") for o in settings.cors_origins.split(",") if o.strip()] or ["*"]
+def parse_origins(raw: str) -> list[str]:
+    """`https://site.vercel.app/` and `"https://site.vercel.app"` both mean https://site.vercel.app."""
+    found = [o.strip().strip("'\"").rstrip("/") for o in raw.replace("\n", ",").split(",")]
+    return [o for o in found if o] or ["*"]
+
+
+origins = parse_origins(settings.cors_origins)
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["*"], allow_headers=["*"])
 app.include_router(router)

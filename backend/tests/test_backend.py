@@ -561,3 +561,12 @@ def test_database_url_paste_mistakes_are_forgiven():
         assert norm(pasted) == good, pasted
     with pytest.raises(RuntimeError, match="empty"):
         norm("   ")
+
+
+def test_cors_origins_are_parsed_forgivingly():
+    from app.main import parse_origins
+
+    assert parse_origins("*") == ["*"]
+    assert parse_origins("") == ["*"]
+    assert parse_origins("https://a.vercel.app/") == ["https://a.vercel.app"]
+    assert parse_origins('"https://a.vercel.app", https://b.com/ ') == ["https://a.vercel.app", "https://b.com"]
