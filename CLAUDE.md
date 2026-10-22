@@ -194,14 +194,16 @@ pure black background, gold accent (`--accent`), red only for live (`--live`), h
 - Accessibility rules applied: skip link, visible gold focus ring, 44px touch targets,
   `aria-current` on nav, `aria-pressed` on filters, reduced-motion support, tabular numerals.
 
-## Deployment (prepared 2026-10-23, not yet deployed)
+## Deployment (API live 2026-10-24; website on Vercel not yet)
 
 - See DEPLOY.md. Vercel = `frontend/` (root dir setting, env `NEXT_PUBLIC_API_URL`), Render = `render.yaml`
   (backend/, Python 3.13, `--proxy-headers` so the login limiter sees real client addresses), Neon = Postgres.
 - `DATABASE_URL` may be `postgresql://...`: `normalize_database_url` (app/db/database.py) adds the psycopg
   driver. Checked against the real Neon database (2026-10-23): connects, creates all 6 tables, a second
-  init_db is harmless, and the reserved-word column `group` round-trips. Not yet run: the daily jobs and
-  the API serving real matches from Postgres (do the first-time setup workflow, then check `/api/matches`). `CORS_ORIGINS` limits browser access (default `*`).
+  init_db is harmless, and the reserved-word column `group` round-trips. Live API: https://score-prediction-api.onrender.com/api
+  (free Render, sleeps when idle). First-time setup workflow ran green; the live API then served 85 matches,
+  predictions for all 62 upcoming and odds for 56. Lesson: GitHub and Render each hold their own copy of
+  `DATABASE_URL`; when they differed the jobs filled one database and the API read another. `CORS_ORIGINS` limits browser access (default `*`).
 - Daily jobs run in GitHub Actions (`.github/workflows/jobs.yml`), not on Render: update_results, train,
   fetch_and_predict, update_odds, writing to Neon. The model is retrained inside each run, so
   `data/model.json` on the API server is never used. `bootstrap.yml` is the one-time backfill. `ci.yml` runs tests.
