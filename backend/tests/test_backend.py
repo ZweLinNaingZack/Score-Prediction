@@ -526,3 +526,19 @@ def test_odds_public_but_model_chances_only_after_unlock(db):
         client.post("/api/matches/1/unlock", headers=me)
         mine = client.get("/api/matches", headers=me).json()[0]
         assert mine["predictions"][0]["chances"] == {"home": 0.5, "draw": 0.25, "away": 0.25}
+
+
+# ---- deployment settings ----
+def test_database_urls_are_normalised_for_psycopg():
+    from app.db.database import normalize_database_url as norm
+
+    assert norm("postgresql://u:p@host/db?sslmode=require") == "postgresql+psycopg://u:p@host/db?sslmode=require"
+    assert norm("postgres://u:p@host/db") == "postgresql+psycopg://u:p@host/db"
+    assert norm("postgresql+psycopg://u:p@host/db") == "postgresql+psycopg://u:p@host/db"  # already fine
+    assert norm("sqlite:///./data/app.db") == "sqlite:///./data/app.db"
+
+
+def test_cors_origins_come_from_settings():
+    with TestClient(app) as client:
+        r = client.get("/api/health", headers={"Origin": "https://example.vercel.app"})
+        assert r.headers.get("access-control-allow-origin") in ("*", "https://example.vercel.app")

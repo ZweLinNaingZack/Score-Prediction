@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
+from app.config import settings
 from app.db.database import init_db
 
 
@@ -14,5 +15,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Score Prediction API", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+origins = [o.strip().rstrip("/") for o in settings.cors_origins.split(",") if o.strip()] or ["*"]
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["*"], allow_headers=["*"])
 app.include_router(router)

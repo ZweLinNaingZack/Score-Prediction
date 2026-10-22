@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     xai_model: str = "grok-3-mini"
     gemini_model: str = "gemini-3.8-flash"
     anthropic_model: str = "claude-haiku-5-5"
+    # SQLite for development. In production use the Postgres URL from Neon (postgresql://...).
     database_url: str = "sqlite:///./data/app.db"
+    # Websites allowed to call the API from a browser, comma separated. "*" = any (fine for development).
+    cors_origins: str = "*"
     # The Odds API (the-odds-api.com): market odds for the comparison card. Free plan = 500 credits a month.
     odds_api_key: str = ""
     # Signs login tokens. Leave blank to use a random secret saved in data/.auth_secret.

@@ -1,0 +1,24 @@
+# Render Blueprint: Render > New > Blueprint > pick this repo. Secrets (sync: false) are asked for once.
+services:
+  - type: web
+    name: score-prediction-api
+    runtime: python
+    plan: free
+    region: singapore # keep the same region as the Neon database
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # --proxy-headers: behind Render every request comes from the proxy; this makes request.client the
+    # real visitor, which the login rate limit needs (otherwise all users share one lock).
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DATABASE_URL # Neon connection string (postgresql://...?sslmode=require)
+        sync: false
+      - key: FOOTBALL_DATA_KEY
+        sync: false
+      - key: CORS_ORIGINS # your Vercel address, e.g. https://score-prediction.vercel.app
+        sync: false
+      - key: AUTH_SECRET # signs login tokens; generated once so logins survive restarts
+        generateValue: true

@@ -194,6 +194,18 @@ pure black background, gold accent (`--accent`), red only for live (`--live`), h
 - Accessibility rules applied: skip link, visible gold focus ring, 44px touch targets,
   `aria-current` on nav, `aria-pressed` on filters, reduced-motion support, tabular numerals.
 
+## Deployment (prepared 2026-10-23, not yet deployed)
+
+- See DEPLOY.md. Vercel = `frontend/` (root dir setting, env `NEXT_PUBLIC_API_URL`), Render = `render.yaml`
+  (backend/, Python 3.13, `--proxy-headers` so the login limiter sees real client addresses), Neon = Postgres.
+- `DATABASE_URL` may be `postgresql://...`: `normalize_database_url` (app/db/database.py) adds the psycopg
+  driver. All tables compile for Postgres (checked), but it has NOT been run against a real Postgres yet:
+  check `/api/matches` after the first deploy. `CORS_ORIGINS` limits browser access (default `*`).
+- Daily jobs run in GitHub Actions (`.github/workflows/jobs.yml`), not on Render: update_results, train,
+  fetch_and_predict, update_odds, writing to Neon. The model is retrained inside each run, so
+  `data/model.json` on the API server is never used. `bootstrap.yml` is the one-time backfill. `ci.yml` runs tests.
+- Requirements are split: requirements.txt (production), -dev (pytest), -ai (optional AI SDKs).
+
 ## Next.js 16 notes (this is not the Next.js from older training data)
 
 - `next.config.ts` has `cacheComponents: true`. Uncached server data must be inside `<Suspense>`.
@@ -207,7 +219,7 @@ pure black background, gold accent (`--accent`), red only for live (`--live`), h
 ## Gotchas
 
 - `uvicorn[standard]` fails to install on Python 3.15 (PyYAML has no wheel). Use plain `uvicorn`.
-- Installed in `backend/.venv`: web packages (fastapi, uvicorn, httpx, python-dotenv,
+- Requirements are split (see Deployment). Installed in `backend/.venv`: web packages (fastapi, uvicorn, httpx, python-dotenv,
   pydantic-settings, sqlalchemy, pytest) and the AI SDKs (openai, google-genai, anthropic).
   pandas, scikit-learn, xgboost are in requirements.txt but NOT installed (the Poisson model does
   not need them); they may lack Python 3.15 wheels.

@@ -1,0 +1,42 @@
+name: Daily jobs
+
+# Records results, retrains the model, makes predictions and fetches odds. Talks straight to the
+# Neon database, so it works even while the free Render service is asleep.
+# Times are UTC. Odds cost about 5 credits per run: twice a day stays inside the free 500 a month.
+on:
+  schedule:
+    - cron: "15 5 * * *"
+    - cron: "15 17 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: jobs
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Final scores of finished matches
+        run: python -m scripts.update_results
+      - name: Retrain the model on the newest results
+        run: python -m app.ml.train
+      - name: Predict upcoming matches
+        run: python -m scripts.fetch_and_predict
+      - name: Market odds
+        run: python -m scripts.update_odds

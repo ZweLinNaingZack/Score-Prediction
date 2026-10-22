@@ -7,7 +7,7 @@ Football match predictions from my own ML model plus Gemini, with an accuracy le
     cd backend
     python -m venv .venv
     .venv\Scripts\activate
-    pip install -r requirements.txt   # on Python 3.15 xgboost/scikit-learn may lack wheels
+    pip install -r requirements-dev.txt
     copy .env.example .env      # then add your football-data.org key
     uvicorn app.main:app --reload
 
@@ -33,6 +33,10 @@ Open http://localhost:3000. Without `NEXT_PUBLIC_API_URL` the app shows mock dat
   in the next 48h (needs each provider's key in `.env`).
 - `python -m scripts.update_results` stores final scores for finished matches.
 - `GET /api/leaderboard` is computed from stored predictions and results.
+
+## Deploy
+
+Vercel (website) + Render (API) + Neon (database) + GitHub Actions (daily jobs). Steps in [DEPLOY.md](DEPLOY.md).
 
 ## Structure
 
