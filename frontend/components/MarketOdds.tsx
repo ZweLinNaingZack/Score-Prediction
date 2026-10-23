@@ -5,9 +5,9 @@ const pct = (x: number) => Math.round(x * 100);
 // Public: what the bookmakers' average odds say. No bookmaker names and no links on purpose.
 export function MarketOdds({ match, odds }: { match: Match; odds: Odds }) {
   const tiles = [
-    { label: match.home.name, odds: odds.home, chance: odds.chances.home },
-    { label: "Draw", odds: odds.draw, chance: odds.chances.draw },
-    { label: match.away.name, odds: odds.away, chance: odds.chances.away },
+    { label: match.home.name, short: match.home.short, odds: odds.home, chance: odds.chances.home },
+    { label: "Draw", short: "Draw", odds: odds.draw, chance: odds.chances.draw },
+    { label: match.away.name, short: match.away.short, odds: odds.away, chance: odds.chances.away },
   ];
   const favourite = Math.max(...tiles.map((t) => t.chance));
 
@@ -22,7 +22,10 @@ export function MarketOdds({ match, odds }: { match: Match; odds: Odds }) {
               t.chance === favourite ? "border-accent/50 bg-accent/[0.07]" : "border-line bg-surface"
             }`}
           >
-            <div className="truncate text-xs uppercase tracking-widest text-muted">{t.label}</div>
+            <div className="truncate text-xs uppercase tracking-widest text-muted">
+              <span className="sm:hidden" title={t.label}>{t.short}</span>
+              <span className="hidden sm:inline">{t.label}</span>
+            </div>
             <div className="mt-1 font-display text-4xl tabular-nums leading-none">{t.odds.toFixed(2)}</div>
             <div className="mt-2 text-xs text-muted tabular-nums">{pct(t.chance)}% chance</div>
           </li>
