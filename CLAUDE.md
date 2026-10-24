@@ -112,6 +112,10 @@ Time: all kickoffs are stored as naive UTC and returned as ISO with a trailing `
 - Frontend league ids are the old API-Football ids (39, 140, 135, 78, 61, 2, 3, 5), kept stable.
   `app/leagues.py` maps football-data codes onto them. Add a league in both `app/leagues.py` and
   `frontend/lib/leagues.ts`.
+- **Scores lag (seen 2026-10-24).** Hours after kickoff, football-data.org still said TIMED (not started) in lists AND
+  the single-match endpoint, and once contradicted itself within minutes (FINISHED 2-1, then TIMED). The site only
+  mirrors it, so matches stay "Upcoming" until it catches up. The UI shows "Awaiting score" for matches 20+ min past
+  kickoff (`isOverdue` in MatchCard.tsx). `results.yml` runs update_results every 3 hours. A real fix is a paid plan.
 - Free-tier live scores may be delayed, and the live `minute` field may be missing. The UI shows
   "Live" without a minute when it is null. Not yet verified against a real live match.
 - We moved here from API-Football because its free plan only covers seasons 2022 to 2024 and blocks

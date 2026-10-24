@@ -4,7 +4,24 @@ import { leagueById } from "@/lib/leagues";
 import type { Match } from "@/lib/types";
 import TeamCrest from "./TeamCrest";
 
+// A match that should already be under way but is still marked upcoming. Our data source (football-data.org
+// free plan) can be hours behind, so say so instead of showing a kickoff time that has passed.
+const GRACE_MS = 20 * 60_000;
+const isOverdue = (m: Match) => m.status === "UPCOMING" && Date.now() - new Date(m.kickoff).getTime() > GRACE_MS;
+
 export function Status({ match, compact = false }: { match: Match; compact?: boolean }) {
+  if (isOverdue(match)) {
+    const d = new Date(match.kickoff);
+    const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return compact ? (
+      <>
+        <span className="text-xs font-semibold text-muted">Awaiting score</span>
+        <span className="text-xs text-muted">Kicked off {time}</span>
+      </>
+    ) : (
+      <span className="text-xs text-muted">Kicked off {time} · awaiting score</span>
+    );
+  }
   if (compact && match.status === "UPCOMING") {
     const d = new Date(match.kickoff);
     return (
