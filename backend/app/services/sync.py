@@ -21,7 +21,8 @@ UPCOMING = {"SCHEDULED", "TIMED"}
 # POSTPONED, SUSPENDED and CANCELLED matches are not shown
 
 MATCH_WINDOW = timedelta(hours=3)  # a match is "possibly live" this long after kickoff
-UPCOMING_DAYS = 9  # the API allows at most 10 days per request
+UPCOMING_DAYS = 30  # how far ahead we load fixtures (leagues only publish about two weeks, so it fills in over time)
+CHUNK_DAYS = 10  # the API allows at most 10 days per request, and its end date is exclusive
 RETRY_AFTER_ERROR = 300  # seconds
 
 
@@ -110,9 +111,12 @@ def upsert(db: Session, items: list[dict]) -> int:
 
 async def refresh_upcoming(db: Session) -> int:
     today = datetime.now(timezone.utc).date()
-    return upsert(
-        db, await get_matches_between(today.isoformat(), (today + timedelta(days=UPCOMING_DAYS)).isoformat())
-    )
+    total = 0
+    for offset in range(0, UPCOMING_DAYS, CHUNK_DAYS):  # one request per 10 days; store each as it arrives
+        start = today + timedelta(days=offset)
+        end = start + timedelta(days=CHUNK_DAYS)
+        total += upsert(db, await get_matches_between(start.isoformat(), end.isoformat()))
+    return total
 
 
 async def refresh_by_ids(db: Session, ids: list[int]) -> int:

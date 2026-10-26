@@ -5,7 +5,11 @@ export type Day = { key: string; weekday: string; day: string; isToday: boolean;
 // Local calendar date as YYYY-MM-DD (not UTC, so late kickoffs land on the viewer's day).
 export const dayKey = (d: Date) => d.toLocaleDateString("en-CA");
 
-export function buildDays(kickoffs: string[], back = 3, ahead = 9): Day[] {
+// `kickoffs` decide which days get a dot. `allKickoffs` (every stored match) decide how far the strip reaches:
+// two days past the last stored match, at least 9 and at most 30 days ahead.
+export function buildDays(kickoffs: string[], allKickoffs: string[] = kickoffs, back = 3): Day[] {
+  const latest = allKickoffs.reduce((max, k) => Math.max(max, Date.parse(k)), 0);
+  const ahead = Math.min(30, Math.max(9, Math.ceil((latest - new Date().getTime()) / 86_400_000) + 2));
   const withMatches = new Set(kickoffs.map((k) => dayKey(new Date(k))));
   const todayKey = dayKey(new Date());
   const days: Day[] = [];

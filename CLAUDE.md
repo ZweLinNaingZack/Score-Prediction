@@ -88,7 +88,9 @@ it after changing a key (`--reload` does not re-read `.env`).
 ## How data flows
 
 1. `GET /api/matches` calls `sync.refresh_if_stale`, then reads the database.
-2. Upcoming matches (next 9 days, API limit is 10) refresh at most hourly: one request.
+2. Upcoming matches (next 30 days) refresh at most hourly: three requests of 10 days each (the API allows
+   10 days per request and its end date is exclusive). Leagues only publish about two weeks ahead, so the
+   stored horizon is what football-data.org knows (checked 2026-10-26: fixtures end around Nov 8).
 3. Live scores refresh at most every 60s, and only while a stored match is live or could have
    started in the last 3h (`live_window_open`). One request.
 4. A match that disappears from the live feed gets its final state fetched by id.
@@ -124,7 +126,8 @@ Time: all kickoffs are stored as naive UTC and returned as ISO with a trailing `
 
 ## Dates and logos
 
-- League pages (`/league/[id]`) show a date strip (3 days back to 9 ahead, `DateStrip.tsx`),
+- League pages (`/league/[id]`) show a date strip (3 days back, up to 30 ahead but only 2 days past the last
+  stored match, `DateStrip.tsx`),
   default today. Days use the viewer's local timezone. Empty day shows "No matches on this day."
   The strip only renders after matches load, which avoids a hydration mismatch.
 - Team logos come from football-data.org `crest` URLs, stored as `home_crest`/`away_crest` on

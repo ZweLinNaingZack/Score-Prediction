@@ -42,22 +42,20 @@ export default function MatchesBoard({ fixedLeagueId }: { fixedLeagueId?: number
   const activeLeague = fixedLeagueId ?? leagueId;
   const liveCount = matches?.filter((m) => m.status === "LIVE").length ?? 0;
 
-  // The dots on the date strip follow the league and status filters.
-  const days = useMemo(
-    () =>
+  // The dots on the date strip follow the league and status filters. The strip reaches two days past the
+  // last day we hold (so the "not loaded yet" message is one tap away), but never beyond 30 days.
+  const days = useMemo(() => {
+    if (!matches) return [];
+    return buildDays(
       matches
-        ? buildDays(
-            matches
-              .filter(
-                (m) =>
-                  (activeLeague === null || m.leagueId === activeLeague) &&
-                  (status === "ALL" || m.status === status),
-              )
-              .map((m) => m.kickoff),
-          )
-        : [],
-    [matches, activeLeague, status],
-  );
+        .filter(
+          (m) =>
+            (activeLeague === null || m.leagueId === activeLeague) && (status === "ALL" || m.status === status),
+        )
+        .map((m) => m.kickoff),
+      matches.map((m) => m.kickoff),
+    );
+  }, [matches, activeLeague, status]);
   // No clock read until matches load: the server prerender must not depend on the current time.
   const day = pickedDay ?? (matches ? dayKey(new Date()) : "");
   // The last day we hold any match for (YYYY-MM-DD, local). Days after it have not been loaded, which is

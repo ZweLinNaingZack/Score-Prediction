@@ -24,7 +24,7 @@ Open http://localhost:3000. Without `NEXT_PUBLIC_API_URL` the app shows mock dat
 ## Data flow
 
 - `GET /api/matches` refreshes from football-data.org when the cache is stale, then reads the
-  database. Upcoming matches (next 9 days) refresh hourly and live scores every minute, but only
+  database. Upcoming matches (next 30 days) refresh hourly and live scores every minute, but only
   while a stored match could be on. Each refresh is one request; the free tier allows 10 per minute.
   Tune `LIVE_CACHE_SECONDS` / `UPCOMING_CACHE_SECONDS` in `.env`.
 - The free tier covers the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and the Champions

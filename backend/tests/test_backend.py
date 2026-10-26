@@ -577,3 +577,18 @@ def test_cors_origin_without_scheme_gets_https():
 
     assert parse_origins("score-prediction-tau.vercel.app") == ["https://score-prediction-tau.vercel.app"]
     assert parse_origins("http://localhost:3000, app.example.com") == ["http://localhost:3000", "https://app.example.com"]
+
+
+def test_upcoming_refresh_loads_30_days_in_10_day_requests(db, monkeypatch):
+    calls = []
+
+    async def fake(start, end):
+        calls.append((start, end))
+        return []
+
+    monkeypatch.setattr(sync, "get_matches_between", fake)
+    asyncio.run(sync.refresh_upcoming(db))
+    assert len(calls) == 3  # 30 days, 10 per request (the API's limit)
+    days = [(datetime.fromisoformat(b) - datetime.fromisoformat(a)).days for a, b in calls]
+    assert days == [10, 10, 10]
+    assert calls[1][0] == calls[0][1] and calls[2][0] == calls[1][1]  # back to back: no gaps, end date is exclusive
