@@ -60,6 +60,12 @@ export default function MatchesBoard({ fixedLeagueId }: { fixedLeagueId?: number
   );
   // No clock read until matches load: the server prerender must not depend on the current time.
   const day = pickedDay ?? (matches ? dayKey(new Date()) : "");
+  // The last day we hold any match for (YYYY-MM-DD, local). Days after it have not been loaded, which is
+  // different from a day that simply has no matches.
+  const lastLoadedDay = useMemo(() => {
+    if (!matches?.length) return "";
+    return dayKey(new Date(Math.max(...matches.map((m) => Date.parse(m.kickoff)))));
+  }, [matches]);
 
   const groups = useMemo(() => {
     if (!matches) return [];
@@ -129,7 +135,13 @@ export default function MatchesBoard({ fixedLeagueId }: { fixedLeagueId?: number
 
       {error && <StateMessage tone="error">Can&apos;t reach the API. Retrying every {refreshSeconds}s.</StateMessage>}
       {matches === null && !error && <StateMessage>Loading matches…</StateMessage>}
-      {matches && groups.length === 0 && <StateMessage>No matches on this day.</StateMessage>}
+      {matches && groups.length === 0 && (
+        <StateMessage>
+          {lastLoadedDay && day > lastLoadedDay
+            ? "Fixtures for this day are not loaded yet. We load about 9 days ahead, and predictions follow within hours."
+            : "No matches on this day."}
+        </StateMessage>
+      )}
 
       {groups.map(({ league, matches }) => (
         <section key={league.id} className="space-y-4">
